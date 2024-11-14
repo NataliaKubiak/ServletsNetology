@@ -7,13 +7,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class PostRepository {
 
     private static final int DB_CAPACITY = 1000;
-    private ConcurrentMap<Long, Post> fakeDB;
+    private final ConcurrentMap<Long, Post> fakeDB;
 
-    private long currentMaxId;
+    private final AtomicLong currentMaxId = new AtomicLong(0);
 
     public PostRepository() {
         fakeDB = new ConcurrentHashMap<>(DB_CAPACITY);
@@ -30,7 +31,7 @@ public class PostRepository {
         fakeDB.put(2L, new Post(2, "This is the second one!"));
         fakeDB.put(3L, new Post(3, "I am writing a third POST!"));
 
-        currentMaxId = 3; // Начинаем с 3, так как у нас уже есть посты с id 1, 2, 3.
+        currentMaxId.set(3); // Начинаем с 3, так как у нас уже есть посты с id 1, 2, 3.
     }
 
     public List<Post> all() {
@@ -43,7 +44,8 @@ public class PostRepository {
 
     public Post save(Post post) {
         if (post.getId() == 0) {
-            long newId = ++currentMaxId;
+            // Генерируем новый потокобезопасный id
+            long newId = currentMaxId.incrementAndGet();
             post.setId(newId);
             fakeDB.put(newId, post);
 
