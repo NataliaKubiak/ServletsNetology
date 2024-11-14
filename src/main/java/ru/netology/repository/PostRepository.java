@@ -53,13 +53,18 @@ public class PostRepository {
 
             } else {
                 throw new IllegalArgumentException("Post with id " + post.getId() + " does not exist.");
-              //или вернуть null
+                //или вернуть null
             }
         }
         return post;
     }
 
-    public void removeById(long id) {
-        fakeDB.remove(id);
+    public boolean removeById(long id) {
+        if (fakeDB.containsKey(id)) {
+            fakeDB.remove(id);
+            return true;
+        } else {
+            return false;
+        }
     }
 }
